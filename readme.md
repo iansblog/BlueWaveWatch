@@ -20,9 +20,9 @@ We extend our gratitude to these organizations for their valuable data and suppo
 
 ## Overview
 
-BlueWave Watch is a Python-based application designed to provide real-time weather forecasts, tide data, and water quality information for sea swimmers. By fetching data from multiple web sources, it helps swimmers make informed decisions about when and where to swim safely.
+BlueWave Watch is a Python-based application designed to provide real-time weather forecasts, tide data, and water quality information for sea swimmers in the UK, by fetching data from multiple web sources, it helps swimmers make informed decisions about when and where to swim safely.
 
-The application utilizes Flask, OpenStreetMap, and web scraping techniques to display relevant data on a map. Users can view the latest weather forecasts, tide times, and water quality information by selecting specific beach locations.
+The application utilises Flask, OpenStreetMap, and web scraping techniques to display relevant data on a map. Users can view the latest weather forecasts, tide times, and water quality information by selecting specific beach locations.
 
 ### Features
 
@@ -59,8 +59,7 @@ The development environment is configured using the following `devcontainer.json
 │   ├── location_data.py      # SQLAlchemy model for location data
 │   ├── tide_data.py          # SQLAlchemy model for tide data
 │   └── weather_data.py       # SQLAlchemy model for weather data
-├── utils/
-│   └── utils.py              # Utility functions (JSON cleaning, exception handling)
+├── utils.py              # Utility functions (JSON cleaning, exception handling)
 └── README.md                 # Project documentation
 ```
 
@@ -68,7 +67,7 @@ The development environment is configured using the following `devcontainer.json
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/username/bluewave-watch.git
+   git clone https://github.com/iansblog/BlueWaveWatch.git
    ```
 
 2. Navigate to the project directory:
@@ -86,55 +85,7 @@ The development environment is configured using the following `devcontainer.json
    flask run
    ```
 
-## Class Diagram
-
-The following Mermaid diagram provides a high-level overview of the class structure used in BlueWave Watch.
-
-```mermaid
-classDiagram
-    class SSRSLocationData {
-        Integer id
-        String data
-        DateTime last_updated
-    }
-
-    class TideTimesData {
-        Integer id
-        String data
-        DateTime last_updated
-    }
-
-    class WeatherForecastData {
-        Integer id
-        String data
-        DateTime last_updated
-    }
-
-    class WeatherService {
-        +fetch_weather_forecast_from_web(latitude, longitude)
-        +fetch_weather_forecast(latitude, longitude)
-    }
-
-    class TideService {
-        +fetch_tide_times_from_web(lat, lng, beach_name)
-        +fetch_tide_times(lat, lng, beach_name)
-    }
-
-    class LocationService {
-        +fetch_location_data_from_web(url)
-        +fetch_location_data(url)
-        +get_location_data(locationResultjSon, location)
-    }
-
-    SSRSLocationData  --> LocationService : "Cache"
-    TideTimesData     --> TideService     : "Cache"
-    WeatherForecastData --> WeatherService : "Cache"
-```
-
 ## Usage
 
 Once the application is running, you can interact with the map interface, search for specific beaches, and retrieve the latest data regarding tides, weather, and water quality. The app integrates OpenStreetMap to provide a geographical interface for users to interact with.
 
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
