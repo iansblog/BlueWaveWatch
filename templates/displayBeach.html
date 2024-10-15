@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlueWave Watch - {{ ssrs_data.Location }}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Include Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Leaflet CSS for OpenStreetMap -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Select2 CSS & JS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <style>
+        #map {
+            height: 400px;
+        }
+    </style>
+    <style>
+        .card {
+            display: flex;
+            flex-direction: column; /* Allows for vertical stacking of header, body, etc. */
+            height: 100%; /* Ensures cards fill the column height */
+        }
+        .weather-card {
+            border: 1px solid #007bff; /* Primary color */
+            border-radius: 0.25rem; /* Bootstrap's default border-radius */
+            padding: 1rem; /* Adds some spacing inside the card */
+        }
+
+    </style>    
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('index') }}">BlueWave Watch</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">  <!-- Use ms-auto for Bootstrap 5 -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-6 mb-4 d-flex">
+                <!-- Area 1: SSRS Information Card -->
+                <div class="card flex-fill">
+                    <div class="card-header text-center">
+                        <h2>{{ ssrs_data.Location }}</h2>
+                    </div>
+                    <div class="card-body">
+                        <!-- Conditional background color based on ssrs_data.Status -->
+                        <p>
+                            <!-- Icon logic -->
+                            {% if "Dormant location" in ssrs_data.Status %}
+                                <i class="fas fa-info-circle" style="color: gray;"></i>
+                            {% elif "Pollution Alert" in ssrs_data.Status %}
+                                <i class="fas fa-exclamation-triangle" style="color: red;"></i>
+                            {% elif "No water quality alerts in place" in ssrs_data.Status %}
+                                <i class="fas fa-check-circle" style="color: green;"></i>
+                            {% else %}
+                                <i class="fas fa-question-circle" style="color: lightgray;"></i>
+                            {% endif %}
+                            <b>Status: </b> {{ ssrs_data.Status }}
+                        </p>
+                        <hr />
+                        <p>{{ ssrs_data.LocationDescription }}</p>
+
+                        <hr/>
+
+                        <div class="container">
+                            <b>Tide Table for {{ssrs_data.Location}}</b>
+                            <img src="{{ url_for('tidetables', filename=tideTables[0]) }}" alt="Tide Table" class="img-fluid">
+                        </div>                        
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Area 2: OpenStreetMap Card -->
+            <div class="col-md-6 mb-4 d-flex">
+                <div class="card flex-fill">
+                    <div class="card-header text-center">
+                        <h2>Map</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="map" style="height: 400px;"></div> <!-- Adjust height as needed -->
+                    </div>
+
+                    <form id="beachForm" class="mt-4 text-center">
+                        <!-- Label for the dropdown -->
+                        <div class="mb-3">
+                            <label for="beachSelect" class="form-label"><b>Select a new beach/location</b></label>
+                        </div>
+                        <!-- Dropdown box for beach selection -->
+                        <div class="mb-3">
+                            <select class="form-select form-select-sm" id="beachSelect" style="width: 80%;"> <!-- Adjust width to 100% for full line -->
+                                <option value="">Select a beach...</option>
+                                {% for location in locations %}
+                                    <option value="{{ location['Location'] }}">{{ location['Location'] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <!-- Submit button -->
+                        <div class="mb-3">
+                            <button type="submit" class="btn btn-primary">Go to location</button>
+                        </div>
+                    
+                    </form>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container mt-4">
+        <div class="row">
+            <!-- Area 3: Tide Card -->
+            <div class="col-md-6 d-flex">
+                <div class="card flex-fill">
+                            <div class="card-header text-center">
+                                <h2>Tide Times</h2>
+                                <p class="text-muted">{{ tide_data['tidetimes-disclaimer'] }}</p>
+                            </div>
+                            <div class="card-body">
+                                {% for forecast in tide_data['forecasts'] %}
+                                <div class="tide-day mb-3">
+                                    <h4 class="text-left">{{ forecast['date'].split(' for ')[-1] }}</h4>
+                                    <ul class="list-group">
+                                        {% for tide in forecast['tides'] %}
+                                        <li class="list-group-item">{{ tide }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% endfor %}
+                            </div>
+                </div>
+            </div>
+    
+            <!-- Area 4: Weather card -->
+            <div class="col-md-6 d-flex">
+                <div class="card flex-fill">
+                    <div class="card-header text-center">
+                        <h2>Weather Overview</h2>
+                        <p class="text-muted">&nbsp;</p>
+                    </div>
+                    <div class="card-body">
+                        <h4 class="card-title text-left">Current Weather</h4>
+                        <div class="row text-center">
+                            <div class="col-6 col-md-6">
+                                <p>Temperature:
+                                    <span>
+                                        {% if weather_data['current_weather']['temperature'] <= 0 %} 🥶
+                                        {% elif weather_data['current_weather']['temperature'] <= 10 %} ❄️
+                                        {% elif weather_data['current_weather']['temperature'] <= 20 %} 🌤
+                                        {% elif weather_data['current_weather']['temperature'] <= 30 %} ☀️
+                                        {% else %} 🔥
+                                        {% endif %}
+                                    </span>
+                                    {{ weather_data['current_weather']['temperature'] }}°C
+                                </p>
+                            </div>
+                            <div class="col-6 col-md-6">
+                                <p>Wind Speed:
+                                    <span>
+                                        {{ weather_data['current_weather']['wind_speed'] }} km/h -
+                                        {% if weather_data['current_weather']['wind_speed'] < 1 %} 🌬️ (Calm)
+                                        {% elif weather_data['current_weather']['wind_speed'] <= 5 %} 🍃 (Light Air)
+                                        {% elif weather_data['current_weather']['wind_speed'] <= 11 %} 🌾 (Light Breeze)
+                                        {% elif weather_data['current_weather']['wind_speed'] <= 19 %} 🌿 (Gentle Breeze)
+                                        {% elif weather_data['current_weather']['wind_speed'] <= 28 %} 🍂 (Moderate Breeze)
+                                        {% elif weather_data['current_weather']['wind_speed'] <= 38 %} 🌬️ (Fresh Breeze)
+                                        {% elif weather_data['current_weather']['wind_speed'] <= 49 %} 🌪️ (Strong Breeze)
+                                        {% elif weather_data['current_weather']['wind_speed'] <= 61 %} 💨 (Moderate Gale)
+                                        {% elif weather_data['current_weather']['wind_speed'] <= 74 %} 🌊 (Fresh Gale)
+                                        {% elif weather_data['current_weather']['wind_speed'] <= 88 %} 🌪️ (Strong Gale)
+                                        {% elif weather_data['current_weather']['wind_speed'] <= 102 %} 🌬️ (Storm)
+                                        {% elif weather_data['current_weather']['wind_speed'] <= 117 %} 🌪️ (Violent Storm)
+                                        {% else %} 🌀 (Hurricane)
+                                        {% endif %}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- Forecast for Day 1 -->
+                    <div class="card-body">
+                        <h4 class="card-title text-left">Forecast for {{ weather_data['forecast']['day_1']['formatted_date'] | default('-') }}</h4>
+                        <div class="row text-center">
+                            <div class="col-6 col-md-6">
+                                <p>Max Temp:
+                                    <span class="temp-icon">
+                                        {% if weather_data['forecast']['day_1']['max_temp'] <= 0 %} 🥶
+                                        {% elif weather_data['forecast']['day_1']['max_temp'] <= 10 %} ❄️
+                                        {% elif weather_data['forecast']['day_1']['max_temp'] <= 20 %} 🌤
+                                        {% elif weather_data['forecast']['day_1']['max_temp'] <= 30 %} ☀️
+                                        {% else %} 🔥
+                                        {% endif %}
+                                    </span>
+                                    {{ weather_data['forecast']['day_1']['max_temp'] | default('-') }}°C
+                                </p>
+                            </div>
+                            <div class="col-6 col-md-6">
+                                <p>Min Temp:
+                                    <span class="temp-icon">
+                                        {% if weather_data['forecast']['day_1']['min_temp'] <= 0 %} 🥶
+                                        {% elif weather_data['forecast']['day_1']['min_temp'] <= 10 %} ❄️
+                                        {% elif weather_data['forecast']['day_1']['min_temp'] <= 20 %} 🌤
+                                        {% else %} ☀️
+                                        {% endif %}
+                                    </span>
+                                    {{ weather_data['forecast']['day_1']['min_temp'] | default('-') }}°C
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row text-center">
+                            <div class="col-6 col-md-6">
+                                <p>🌅 Sunrise: {{ weather_data['forecast']['day_1']['sunrise'][11:16] | default('-') }}</p>
+                            </div>
+                            <div class="col-6 col-md-6">
+                                <p>🌇 Sunset: {{ weather_data['forecast']['day_1']['sunset'][11:16] | default('-') }}</p>
+                            </div>
+                        </div>
+                        <div class="row text-center">
+                            <div class="col-12 col-md-6">
+                                <p>Precipitation:
+                                    <span>
+                                        {% if weather_data['forecast']['day_1']['precipitation'] == 0 %} ☀️ No Rain
+                                        {% elif weather_data['forecast']['day_1']['precipitation'] <= 4 %} 🌦️ Light Rain
+                                        {% elif weather_data['forecast']['day_1']['precipitation'] <= 10 %} 🌧️ Moderate Rain
+                                        {% else %} 🌧️ Heavy Rainfall
+                                        {% endif %}
+                                    </span>
+                                    {{ weather_data['forecast']['day_1']['precipitation'] | default('-') }} mm
+                                </p>
+                            </div>
+                            <div class="col-6 col-md-6">
+                                <p>Wind:
+                                    <span>
+                                        {% if weather_data['forecast']['day_1']['wind_speed'] <= 5 %} 🍃 Light Air
+                                        {% elif weather_data['forecast']['day_1']['wind_speed'] <= 19 %} 🌿 Gentle Breeze
+                                        {% elif weather_data['forecast']['day_1']['wind_speed'] <= 49 %} 💨 Strong Breeze
+                                        {% else %} 🌀 Hurricane
+                                        {% endif %}
+                                    </span>
+                                    {{ weather_data['forecast']['day_1']['wind_speed'] | default('-') }} km/h
+                                </p>
+                            </div>
+                        </div>
+                    </div> <!-- Closing card-body for Day 1 -->
+    
+                    <!-- Forecast for Day 2 -->
+                    <div class="card-body">
+                        <h4 class="card-title text-left">Forecast for {{ weather_data['forecast']['day_2']['formatted_date'] | default('-') }}</h4>
+                        <div class="row text-center">
+                            <div class="col-6 col-md-6">
+                                <p>Max Temp:
+                                    <span class="temp-icon">
+                                        {% if weather_data['forecast']['day_2']['max_temp'] <= 0 %} 🥶
+                                        {% elif weather_data['forecast']['day_2']['max_temp'] <= 10 %} ❄️
+                                        {% elif weather_data['forecast']['day_2']['max_temp'] <= 20 %} 🌤
+                                        {% elif weather_data['forecast']['day_2']['max_temp'] <= 30 %} ☀️
+                                        {% else %} 🔥
+                                        {% endif %}
+                                    </span>
+                                    {{ weather_data['forecast']['day_2']['max_temp'] | default('-') }}°C
+                                </p>
+                            </div>
+                            <div class="col-6 col-md-6">
+                                <p>Min Temp:
+                                    <span class="temp-icon">
+                                        {% if weather_data['forecast']['day_2']['min_temp'] <= 0 %} 🥶
+                                        {% elif weather_data['forecast']['day_2']['min_temp'] <= 10 %} ❄️
+                                        {% elif weather_data['forecast']['day_2']['min_temp'] <= 20 %} 🌤
+                                        {% else %} ☀️
+                                        {% endif %}
+                                    </span>
+                                    {{ weather_data['forecast']['day_2']['min_temp'] | default('-') }}°C
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row text-center">
+                            <div class="col-6 col-md-6">
+                                <p>🌅 Sunrise: {{ weather_data['forecast']['day_2']['sunrise'][11:16] | default('-') }}</p>
+                            </div>
+                            <div class="col-6 col-md-6">
+                                <p>🌇 Sunset: {{ weather_data['forecast']['day_2']['sunset'][11:16] | default('-') }}</p>
+                            </div>
+                        </div>
+                        <div class="row text-center">
+                            <div class="col-12 col-md-6">
+                                <p>Precipitation:
+                                    <span>
+                                        {% if weather_data['forecast']['day_2']['precipitation'] == 0 %} ☀️ No Rain
+                                        {% elif weather_data['forecast']['day_2']['precipitation'] <= 4 %} 🌦️ Light Rain
+                                        {% elif weather_data['forecast']['day_2']['precipitation'] <= 10 %} 🌧️ Moderate Rain
+                                        {% else %} 🌧️ Heavy Rainfall
+                                        {% endif %}
+                                    </span>
+                                    {{ weather_data['forecast']['day_2']['precipitation'] | default('-') }} mm
+                                </p>
+                            </div>
+                            <div class="col-6 col-md-6">
+                                <p>Wind:
+                                    <span>
+                                        {% if weather_data['forecast']['day_2']['wind_speed'] <= 5 %} 🍃 Light Air
+                                        {% elif weather_data['forecast']['day_2']['wind_speed'] <= 19 %} 🌿 Gentle Breeze
+                                        {% elif weather_data['forecast']['day_2']['wind_speed'] <= 49 %} 💨 Strong Breeze
+                                        {% else %} 🌀 Hurricane
+                                        {% endif %}
+                                    </span>
+                                    {{ weather_data['forecast']['day_2']['wind_speed'] | default('-') }} km/h
+                                </p>
+                            </div>
+                        </div>
+                    </div> <!-- Closing card-body for Day 2 -->
+                </div> <!-- Closing card for Weather Overview -->
+            </div>
+        </div>
+
+        <hr/>
+
+        <div class="container mt-6">
+            <h2>Data Sources and Organisations</h2>
+            <p>Our project utilises data from the following organisations:</p>
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <a href="https://www.sas.org.uk" target="_blank">Surfers Against Sewage</a>
+                    <p class="mb-0">Surfers Against Sewage is dedicated to protecting the oceans, waves, and beaches by engaging, inspiring, and empowering communities to take action.</p>
+                    <p><b>Refresh rate:</b> This information is refreshed every 60 minutes to keep this site up to date without overwhelming the SAS site.</p>
+                    <p><b>Mobile App:</b> Download the Surfers Against Sewage app for real-time water quality alerts: <a href="https://apps.apple.com/us/app/surfers-against-sewage/id1065408131" target="_blank">Apple</a> | <a href="https://play.google.com/store/apps/details?id=com.sas.sas&hl=en&gl=US" target="_blank">Android</a></p>
+                </li>
+
+                <li class="list-group-item">
+                    <a href="https://www.tidetimes.co.uk" target="_blank">Tide Times</a>
+                    <p class="mb-0">Tide Times offers accurate tidal information, helping users understand sea levels for safe swimming and other water activities.</p>
+                    <p><b>Refresh rate:</b> This information is refreshed every day per location to keep this site up to date without overwhelming the tidetimes.co.uk site.</p>
+                </li>
+                <li class="list-group-item">
+                    <a href="https://api.open-meteo.com" target="_blank">Open-Meteo</a>
+                    <p class="mb-0">Open-Meteo provides free weather forecasts, enabling users to stay informed about weather conditions at various locations.</p>
+                    <p><b>Refresh rate:</b> This information is refreshed every 60 minutes per location to keep this site up to date without overwhelming the Open-meteo site.</p>
+                </li>
+            </ul>
+            <p class="mt-3">We extend our gratitude to these organisations for their valuable data to help ensuring safe swimming conditions.</p>
+        </div>
+        
+        <hr/>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light py-4 mt-5">
+        <div class="container">
+            <p class="text-center">Providing water quality, tide, and weather updates to keep you safe while swimming.</p>
+        </div>
+    </footer>     
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Leaflet JS for OpenStreetMap -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // OpenStreetMap
+        var map = L.map('map').setView([{{ weather_data['location']['latitude'] }}, {{ weather_data['location']['longitude'] }}], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+        var marker = L.marker([{{ weather_data['location']['latitude'] }}, {{ weather_data['location']['longitude'] }}]).addTo(map);
+        marker.bindPopup("<b>{{ ssrs_data.Location }}</b>").openPopup();
+    </script>
+
+    <script>
+        $(document).ready(function() {
+            $('#beachSelect').select2({
+                placeholder: "Type to search for a beach...",
+                allowClear: true
+            });
+
+            $('#beachForm').on('submit', function(e) {
+                e.preventDefault();
+                var selectedBeach = $('#beachSelect').val();
+                if (selectedBeach) {
+                    var encodedBeach = encodeURIComponent(selectedBeach);
+                    window.location.href = "/location/" + encodedBeach;
+                } else {
+                    alert("Please select a beach.");
+                }
+            });
+        });
+    </script>
+
+
+
+</body>
+</html>

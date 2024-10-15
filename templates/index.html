@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlueWave Watch - Select location</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Select2 CSS & JS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('index') }}">BlueWave Watch</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">  <!-- Use ms-auto for Bootstrap 5 -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    <div class="container mt-5">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-danger" role="alert">
+                    {{ messages[0] }}
+                </div>
+            {% endif %}
+        {% endwith %}
+    </div>
+    
+    <div class="container mt-5">
+        <h1>Select a location</h1>
+        
+        <!-- User Instructions -->
+        <div class="alert alert-info">
+            <h5>Instructions:</h5>
+            <p>Welcome to the Beach/location Selection page! Here you can choose a beach to view detailed information about water quality, tides, and weather conditions.</p>
+            <ol>
+                <li>Start typing in the <strong>Beach/location Name</strong> dropdown to filter the available beaches.</li>
+                <li>Select the beach of your choice from the list.</li>
+                <li>Click the <strong>Go to location</strong> button to see the relevant details.</li>
+            </ol>
+        </div>
+
+        <form id="beachForm" class="mt-4">
+
+            <div class="mb-3 d-flex align-items-center">
+                <label for="beachSelect" class="form-label me-2 mb-0">Beach / location name</label>
+                <!-- Dropdown with auto-suggest using Select2, set width to 400px or adjust as needed -->
+                <select class="form-select form-select-sm me-2" id="beachSelect" style="width: 400px;"> <!-- Adjust width here -->
+                    <option value="">Select a beach...</option>
+                    <!-- Populate the options dynamically from the Flask template -->
+                    {% for location in locations %}
+                        <option value="{{ location['Location'] }}">{{ location['Location'] }}</option>
+                    {% endfor %}
+                </select>
+                <!-- Go to button with margin to create a gap -->
+                <button type="submit" class="btn btn-primary ms-2">Go to location</button>
+            </div>
+        </form>
+            
+        <div class="container mt-5">
+            <h2>Data Sources and Organisations</h2>
+            <p>Our project utilises data from the following organisations:</p>
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <a href="https://www.sas.org.uk" target="_blank">Surfers Against Sewage</a>
+                    <p class="mb-0">Surfers Against Sewage is dedicated to protecting the oceans, waves, and beaches by engaging, inspiring, and empowering communities to take action.</p>
+                    <p><b>Refresh rate:</b> This information is refreshed every 60 minutes to keep this site up to date without overwhelming the SAS site.</p>
+                    <p><b>Mobile App:</b> Download the Surfers Against Sewage app for real-time water quality alerts: <a href="https://apps.apple.com/us/app/surfers-against-sewage/id1065408131" target="_blank">Apple</a> | <a href="https://play.google.com/store/apps/details?id=com.sas.sas&hl=en&gl=US" target="_blank">Android</a></p>
+                </li>
+
+                <li class="list-group-item">
+                    <a href="https://www.tidetimes.co.uk" target="_blank">Tide Times</a>
+                    <p class="mb-0">Tide Times offers accurate tidal information, helping users understand sea levels for safe swimming and other water activities.</p>
+                    <p><b>Refresh rate:</b> This information is refreshed every day per location to keep this site up to date without overwhelming the tidetimes.co.uk site.</p>
+                </li>
+                <li class="list-group-item">
+                    <a href="https://api.open-meteo.com" target="_blank">Open-Meteo</a>
+                    <p class="mb-0">Open-Meteo provides free weather forecasts, enabling users to stay informed about weather conditions at various locations.</p>
+                    <p><b>Refresh rate:</b> This information is refreshed every 60 minutes per location to keep this site up to date without overwhelming the Open-meteo site.</p>
+                </li>
+            </ul>
+            <p class="mt-3">We extend our gratitude to these organisations for their valuable data to help ensuring safe swimming conditions.</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light py-4 mt-5">
+        <div class="container">
+            <p class="text-center">Providing water quality, tide, and weather updates to keep you safe while swimming.</p>
+        </div>
+    </footer>    
+
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2 on the select element
+            $('#beachSelect').select2({
+                placeholder: "Type to search for a beach...",
+                allowClear: true
+            });
+
+            // Handle form submission to redirect based on the selected beach
+            $('#beachForm').on('submit', function(e) {
+                e.preventDefault();
+                var selectedBeach = $('#beachSelect').val();
+                if (selectedBeach) {
+                    // Encode the selected beach name to handle spaces in the URL
+                    var encodedBeach = encodeURIComponent(selectedBeach);
+                    // Redirect to the dynamic URL with spaces intact (encoded as %20)
+                    window.location.href = "/location/" + encodedBeach;
+                } else {
+                    alert("Please select a beach.");
+                }
+            });
+        });
+    </script>
+
+
+   <!-- Bootstrap JS -->
+   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
