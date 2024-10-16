@@ -10,6 +10,7 @@ from services.marine_service import fetch_marine_weather
 from datetime import datetime
 import os
 
+
 app = Flask(__name__)
 
 # Set a secret key for session management.

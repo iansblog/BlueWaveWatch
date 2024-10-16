@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  helloworld:
+    container_name: bluewavewwatch # Naming the container
+    image: neonsunset/bluewavewwatch
+    ports:
+      - "7000:80" # Adjust the ports as needed
+    networks:
+      - netowrk_bluewavewwatch
+    restart: always
+
+networks:
+  netowrk_bluewavewwatch:
+    driver: bridge
