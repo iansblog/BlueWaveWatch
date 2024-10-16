@@ -75,7 +75,7 @@ graph TD
 
     C --> D[Location Data] -->|Fetches Tide Times| E[Tide Service]
     D -->|Fetches Weather Forecast| F[Weather Service]
-    D -->|Fetches Marine Weather Data| G[Marine Service]
+    D -->|Fetches Marine Weather Data - NOT IN USE | G[Marine Service]
     D -->|Fetches SRRS Data| H[SRRS Service]
 
     E --> J[Tide Data]
@@ -85,9 +85,9 @@ graph TD
     H --> I[SRRS Data]
     I -->|Format SRRS Data| P[Display Beach Page]
 
-    J -->|Format Location Data| P
-    K -->|Format Location Data| P
-    L -->|Format Location Data| P
+    J -->|Format Tide Data| P
+    K -->|Format Weather Data| P
+    L -->|Format Marine Weather Data| P
 
     P -->|Shows Data to User| N[User]
 
