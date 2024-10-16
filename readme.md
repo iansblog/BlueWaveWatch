@@ -81,13 +81,13 @@ This project consists of several important documentation files that provide esse
 
 ## Documentation Files
 
-- **[dockerbuild_readme.md](dockerbuild_readme.md)**  
+- **[dockerbuild_readme.md](dockerbuildReadme.md)**  
   A guide on how to build and push the Docker image to Docker Hub. This document contains instructions for maintaining and updating the Docker setup for the application.
 
 - **[codeOverview.md](codeOverview.md)**  
   An overview of the code flow and database structure. This document provides insights into the architecture of the application, including how different components interact with each other.
 
-- **[README.md](README.md)**  
+- **[readme.md](readme.md)**  
   The main project documentation that outlines the purpose of the project, installation instructions, usage details, and other relevant information for users and developers.
 
 For further details, please refer to the respective markdown files.
