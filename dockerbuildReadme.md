@@ -25,7 +25,7 @@ This project is being used as a test bed for deployment to cloud hosting and loc
 
 ## Docker commands
 ### Build and test
-docker build -t neonsunset/bluewavewwatch
+docker build -t neonsunset/bluewavewwatch .
 
 #### Port 80 (default for the internet)
 - docker container run -d -p 80:80 neonsunset/bluewavewwatch:latest 
@@ -41,9 +41,9 @@ docker build -t neonsunset/bluewavewwatch
 - docker compose up
 
 or runing
-
-- docker stop condescending_kilby
-- docker rm condescending_kilby
+- docker pull neonsunset/bluewavewwatch:latest
+- docker stop bluewavewwatch
+- docker rm bluewavewwatch
 - docker run -d --name bluewavewwatch --restart always -p 80:80 neonsunset/bluewavewwatch:latest
 
 Please change the port as needed. 

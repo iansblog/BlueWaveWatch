@@ -118,3 +118,27 @@ def get_SSRS_locations():
     except Exception as e:
         # Return a general error message as a JSON string
         return json.dumps({"error": f"Unexpected error: {str(e)}"})
+
+def get_SSRS_locations_GeoTaged():
+    SSRSLocationResultjSon = SSRS_fetch_location_data(SSRSurl)
+    SSRSLocationResultjSon = clean_json(SSRSLocationResultjSon)
+    return SSRSLocationResultjSon
+
+#    try:
+#        # Load the cleaned JSON string into a Python list or dict
+#        SSRSLocationResultjSon = json.loads(SSRSLocationResultjSon)
+#        
+#        # Extract location data
+#        locations = [{"Location": entry["Location"]} for entry in SSRSLocationResultjSon]
+#        
+#        # Return the locations as a JSON response
+#        return locations
+#        #return jsonify(locations)
+#    
+#    except json.JSONDecodeError as jde:
+#        # Handle JSON decoding errors specifically
+#        return json.dumps({"error": f"JSON decoding error: {str(jde)}"})
+#    
+#    except Exception as e:
+#        # Return a general error message as a JSON string
+#        return json.dumps({"error": f"Unexpected error: {str(e)}"})
